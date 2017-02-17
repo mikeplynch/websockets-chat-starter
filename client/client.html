@@ -10,7 +10,57 @@
          online at your node.js address under /socket.io/socket.io.js 
          You can disable that on the server if desired
     -->
+    <script src="/socket.io/socket.io.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.min.js"></script>
+    
+    <script type="text/babel">
+        let user;
+
+        const connectSocket = (e) => {
+            const message = document.querySelector("#message");
+            const chat = document.querySelector("#chat");
+            const socket = io.connect();            
+            
+            socket.on('connect', () => {
+                console.log('connecting');
+                
+                user = document.querySelector("#username").value;
+                
+                if(!user) {
+                    user = "unknown";
+                }
+                
+                socket.emit('join', { name: user });
+            });
+            
+            socket.on('msg', (data) => {
+                console.log(data);
+                printMessage(data);
+            });
+        };
+
+        const sendMessage = () => {
+            const message = document.querySelector("#message");
+            const socket = io.connect();
+            
+            socket.emit('msgToServer', {name: user, msg: message.value });
+        };
+
+        const printMessage = (msg) => {
+            const chat = document.querySelector("#chat");
+            chat.innerHTML += (msg.name + ": " + msg.msg + "\n");
+        }
+
+        const init = () => {
+            const connect = document.querySelector("#connect");
+            connect.addEventListener('click', connectSocket);
+            
+            const send = document.querySelector("#send");
+            send.addEventListener('click', sendMessage);
+        };
+        
+        window.onload = init;
+    </script>
 	<style>
 		textarea {
 			display: block;
@@ -27,6 +77,6 @@
 	<input id="message" name="message" type="text"/>
 	<input id="send" type="button" value="send" />
 	
-	<textarea id="chat" rows="20" cols="40" readonly> </textarea>
+	<textarea id="chat" rows="20" cols="40" readonly></textarea>
 </body>
 </html>
